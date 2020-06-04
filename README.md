@@ -36,10 +36,14 @@
 请注意，密码以纯文本存储。
 
 ## Http基本认证
-| `http.basic.login: true`   | 启用web登录页面  |
-| `http.basic.login: false`  | 启用 WWW-Authenticate 验证 |
+|         参数配置            |         用途               |
+|--------------------------- |----------------------------|
+| `http.basic.login: true`   | 启用web登录页面             |
+| `http.basic.login: false`  | 启用 WWW-Authenticate 验证  |
 
 ## 基于IP的身份验证
+|         参数配置                       |         用途               |
+|---------------------------------------|----------------------------|
 | `http.basic.ipwhitelist: []`          | 白名单设置              |
 | `discovery.zen.ping.unicast.hosts:[]` |集群配置会自动加入白名单  |
 
