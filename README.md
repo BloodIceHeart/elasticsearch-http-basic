@@ -38,7 +38,7 @@
 ## Http基本认证
 |         参数配置               |         用途                              |
 |-------------------------------|-------------------------------------------|
-| `http.basic.login: enabled`   | 开启/关闭 HTTP基本/ IP身份验证             |
+| `http.basic.enabled: true`    | 开启/关闭 HTTP基本/ IP身份验证             |
 | `http.basic.login: true`      | 启用web登录页面                            |
 | `http.basic.login: false`     | 启用 WWW-Authenticate 验证                |
 
