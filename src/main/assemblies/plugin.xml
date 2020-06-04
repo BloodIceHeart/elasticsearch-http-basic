@@ -4,22 +4,31 @@
     <formats>
         <format>zip</format>
     </formats>
-    <includeBaseDirectory>false</includeBaseDirectory>
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <fileSets>
+    <fileSet>
+        <outputDirectory>/</outputDirectory>
+        <directory>src/main/resources</directory>
+        <includes>
+            <include>**/*</include>
+        </includes>
+    </fileSet>
+    </fileSets>
     <dependencySets>
-        <dependencySet>
+        <!--<dependencySet>
             <outputDirectory>/</outputDirectory>
             <useProjectArtifact>true</useProjectArtifact>
             <useTransitiveFiltering>true</useTransitiveFiltering>
             <excludes>
                 <exclude>org.elasticsearch:elasticsearch</exclude>
             </excludes>
-        </dependencySet>
+        </dependencySet>-->
         <dependencySet>
             <outputDirectory>/</outputDirectory>
             <useProjectArtifact>true</useProjectArtifact>
-            <useTransitiveFiltering>true</useTransitiveFiltering>
+            <useTransitiveFiltering>false</useTransitiveFiltering>
             <includes>
-                <include>com.asquera.elasticsearch:elasticsearch-http-basic</include>
+                <include>com.asquera.elasticsearch:http-basic</include>
             </includes>
         </dependencySet>
     </dependencySets>
