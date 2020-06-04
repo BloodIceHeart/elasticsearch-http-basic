@@ -1,8 +1,8 @@
 ## ElasticSearch的HTTP基本/ IP身份验证
-参考https://github.com/Asquera/elasticsearch-http-basic开发的elasticsearch2.2.1版本
-1、配置简单
-2、有白名单配置，白名单ip列表用户无需验证可直接访问，白名单外用户需用户名密码
-3、由于白名单无法控制通过域名的访问，如果要通过域名访问ES必须要通过用户名和密码来访问
+1、配置简单  
+2、有白名单配置，白名单ip列表用户无需验证可直接访问，白名单外用户需用户名密码  
+3、由于白名单无法控制通过域名的访问，如果要通过域名访问ES必须要通过用户名和密码来访问  
+参考https://github.com/Asquera/elasticsearch-http-basic开发的elasticsearch2.2.1版本  
 
 ## 对应elasticsearch版本
 
@@ -36,16 +36,17 @@
 请注意，密码以纯文本存储。
 
 ## Http基本认证
-|         参数配置            |         用途               |
-|--------------------------- |----------------------------|
-| `http.basic.login: true`   | 启用web登录页面             |
-| `http.basic.login: false`  | 启用 WWW-Authenticate 验证  |
+|         参数配置               |         用途                              |
+|-------------------------------|-------------------------------------------|
+| `http.basic.login: enabled`   | 开启/关闭 HTTP基本/ IP身份验证             |
+| `http.basic.login: true`      | 启用web登录页面                            |
+| `http.basic.login: false`     | 启用 WWW-Authenticate 验证                |
 
 ## 基于IP的身份验证
 |         参数配置                       |         用途               |
 |---------------------------------------|----------------------------|
-| `http.basic.ipwhitelist: []`          | 白名单设置              |
-| `discovery.zen.ping.unicast.hosts:[]` |集群配置会自动加入白名单  |
+| `http.basic.ipwhitelist: []`          | 白名单设置                  |
+| `discovery.zen.ping.unicast.hosts:[]` |集群配置会自动加入白名单     |
 
 ## 替代方法
 请参见[Search Guard] https://docs.search-guard.com/
