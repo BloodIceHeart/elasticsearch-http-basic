@@ -30,19 +30,18 @@
 | `http.basic.login`                | true                         | 启用web登录页面                                             | 
 | `http.basic.token.name`           | "sinosoftSSO"                | 登录令牌参数名（支持第三方验证令牌）                         | 
 | `http.basic.token.uri`            | ""                           | 第三方验证令牌地址 uri?sinosoftSSO=xxx                      | 
-| `http.basic.token.imeout`         | "1800000"                    | 令牌失效时间                                                | 
-| `http.basic.token.size`           | "20"                         | 令牌缓存数量（超过此数量会触发清理失效操作）                  | 
+| `http.basic.token.imeout`         | 1800000                      | 令牌失效时间                                                | 
+| `http.basic.token.size`           | 20                           | 令牌缓存数量（超过此数量会触发清理失效操作）                  | 
 
 请注意，密码以纯文本存储。
 
 ## Http基本认证
-http.basic.login: true  ## 启用web登录页面
-http.basic.login: false ## 启用 WWW-Authenticate 验证
+| `http.basic.login: true`   | 启用web登录页面  |
+| `http.basic.login: false`  | 启用 WWW-Authenticate 验证 |
 
 ## 基于IP的身份验证
-http.basic.ipwhitelist: [] ## 白名单设置
-discovery.zen.ping.unicast.hosts
-集群配置会自动加入白名单
+| `http.basic.ipwhitelist: []`          | 白名单设置              |
+| `discovery.zen.ping.unicast.hosts:[]` |集群配置会自动加入白名单  |
 
 ## 替代方法
 请参见[Search Guard] https://docs.search-guard.com/
