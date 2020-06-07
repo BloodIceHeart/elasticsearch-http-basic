@@ -7,13 +7,8 @@ import com.asquera.elasticsearch.plugins.http.auth.ProxyChains;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.rest.BaseRestHandler;
-import org.elasticsearch.rest.RestChannel;
-import org.elasticsearch.rest.RestController;
-import org.elasticsearch.rest.RestFilter;
-import org.elasticsearch.rest.RestRequest;
+import org.elasticsearch.rest.*;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,13 +32,19 @@ public class HttpBasicServerHandler extends BaseRestHandler {
      */
     public Authenticator iniAuthenticator(final Settings settings) {
         final boolean whitelistEnabled = settings.getAsBoolean("http.basic.ipwhitelist", true);
-        String[] whitelisted = new String[0];
+        String[] whitelisted = new String[]{};
         if (whitelistEnabled) {
-            whitelisted = settings.getAsArray("http.basic.ipwhitelist", new String[]{"localhost", "127.0.0.1"});
+            whitelisted = settings.getAsArray("http.basic.ipwhitelist", new String[]{});
         }
         String[] hosts = settings.getAsArray("discovery.zen.ping.unicast.hosts", new String[]{});
         List<String> lists = new ArrayList<String>();
         lists.addAll(Arrays.asList(whitelisted));
+        if (!lists.contains("localhost")) {
+            lists.add("localhost");
+        }
+        if (!lists.contains("127.0.0.1")) {
+            lists.add("127.0.0.1");
+        }
         for (int i = 0; i < hosts.length; i++) {
             String host = hosts[i];
             if (host.indexOf(":") > 0) {
@@ -60,10 +61,10 @@ public class HttpBasicServerHandler extends BaseRestHandler {
         auth.setWhitelist(whitelist);
         auth.setProxyChains(proxyChains);
         auth.setxForwardHeader(settings.get("http.basic.xforward", ""));
-        auth.setLog(settings.getAsBoolean("http.basic.log", false));
+        auth.setLog(settings.getAsBoolean("http.basic.log", true));
         auth.setLogin(settings.getAsBoolean("http.basic.login", true));
         auth.setTokenName(settings.get("http.basic.token.name", "sinosoftSSO"));
-        auth.setTokenCheckUri(settings.get("http.basic.token.uri", ""));
+        auth.setTokenUri(settings.get("http.basic.token.uri", ""));
         auth.setToken_timeout(settings.getAsLong("http.basic.token.imeout", 1800000L));
         auth.setToken_size(settings.getAsInt("http.basic.token.size", 20));
         auth.log();

@@ -18,7 +18,7 @@ public class AuthDto {
     //令牌字段名
     private String tokenName;
     //令牌验证服务
-    private String tokenCheckUri;
+    private String tokenUri;
     //令牌超时时间设置
     private Long token_timeout = 1800000L;
     //令牌清理上线
@@ -88,12 +88,12 @@ public class AuthDto {
         this.tokenName = tokenName;
     }
 
-    public String getTokenCheckUri() {
-        return tokenCheckUri;
+    public String getTokenUri() {
+        return tokenUri;
     }
 
-    public void setTokenCheckUri(String tokenCheckUri) {
-        this.tokenCheckUri = tokenCheckUri;
+    public void setTokenUri(String tokenUri) {
+        this.tokenUri = tokenUri;
     }
 
     public Long getToken_timeout() {
@@ -115,7 +115,7 @@ public class AuthDto {
     public void log() {
         HttpBasicLogger.info("using {}:{} with whitelist: {}, xforward header field: {}, trusted proxy chain: {}",
                 user, password, whitelist, xForwardHeader, proxyChains);
-        HttpBasicLogger.info("using log:{}, login:{}, tokenName:{}, tokenCheckUri:{}, token_timeout:{}, token_size:{}",
-                log, login, tokenName, tokenCheckUri, token_timeout, token_size);
+        HttpBasicLogger.info("using log:{}, login:{}, tokenName:{}, tokenUri:{}, token_timeout:{}, token_size:{}",
+                log, login, tokenName, tokenUri, token_timeout, token_size);
     }
 }

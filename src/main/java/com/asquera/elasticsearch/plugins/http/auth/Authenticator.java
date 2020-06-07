@@ -3,11 +3,7 @@ package com.asquera.elasticsearch.plugins.http.auth;
 import com.asquera.elasticsearch.plugins.http.HttpBasicLogger;
 import com.asquera.elasticsearch.plugins.http.security.TokenUtil;
 import org.elasticsearch.common.Base64;
-import org.elasticsearch.rest.BytesRestResponse;
-import org.elasticsearch.rest.RestChannel;
-import org.elasticsearch.rest.RestFilterChain;
-import org.elasticsearch.rest.RestRequest;
-import org.elasticsearch.rest.RestStatus;
+import org.elasticsearch.rest.*;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -54,7 +50,7 @@ public class Authenticator {
             //登录成功的需要回写token
             Map<String, String> maps = this.getContent(request);
             if (loginCheck(request)) {
-                String strToken = this.genToken(request);
+                String strToken = this.getToken(request);
                 String indexUrl = "http://" + request.header("Host") + this.head_index;
                 String content = "<script languge='javascript'>window.location.href='" + indexUrl +"'</script>";
                 BytesRestResponse response = new BytesRestResponse(RestStatus.OK, content);
@@ -125,15 +121,15 @@ public class Authenticator {
                 givenPass = maps.get(login_password);
                 if (auth.getUser().equals(givenUser) && auth.getPassword().equals(givenPass)) {
                     if (auth.isLog()) {
-                        HttpBasicLogger.info("login success Authorized of user {} and password {}", maps.get(login_user), maps.get(login_password));
+                        HttpBasicLogger.info("Login Authorized success of user {} and password {}", maps.get(login_user), maps.get(login_password));
                     }
                     return true;
                 } else {
-                    HttpBasicLogger.error("login failed Authorized of user {} and password {}", maps.get(login_user), maps.get(login_password));
+                    HttpBasicLogger.error("Login Authorized failed of user {} and password {}", maps.get(login_user), maps.get(login_password));
                 }
             }
         } catch (Exception e) {
-            HttpBasicLogger.warn("Retrieving of user {} and password {} login failed", givenUser, givenPass);
+            HttpBasicLogger.warn("Retrieving of user {} and password {} login Authorized failed", givenUser, givenPass);
         }
         return false;
     }
@@ -165,19 +161,24 @@ public class Authenticator {
         String strToken = "";
         try {
             strToken = getTokenFromCookie(request);
-            //已登录，且不超过30分钟
             if (!isEmpty(strToken)) {
-                if (ssoMaps.containsKey(strToken) && System.currentTimeMillis() - ssoMaps.get(strToken) < auth.getToken_timeout()) {
+                //验证令牌有效性1、本地有数据且未超时；2、本地无数据且第三方验证通过。
+                if ((ssoMaps.containsKey(strToken) && System.currentTimeMillis() - ssoMaps.get(strToken) < auth.getToken_timeout()) ||
+                        (!isEmpty(auth.getTokenUri()) && !ssoMaps.containsKey(strToken) && TokenUtil.tokenService(auth.getTokenUri(), auth.getTokenName(), strToken))) {
                     if (auth.isLog()) {
-                        HttpBasicLogger.info("token success Authorized of {} ", strToken);
+                        if (ssoMaps.containsKey(strToken)) {
+                            HttpBasicLogger.info("Token Authorized success of {} effective time {}", strToken, System.currentTimeMillis() - ssoMaps.get(strToken));
+                        } else {
+                            HttpBasicLogger.info("Token Authorized success of {} effective time {}", strToken, auth.getToken_timeout());
+                        }
                     }
                     return true;
                 } else {
-                    HttpBasicLogger.error("token failed Authorized of {} ", strToken);
+                    HttpBasicLogger.error("Token Authorized failed of {} ", strToken);
                 }
             }
         } catch (Exception e) {
-            HttpBasicLogger.warn("Retrieving of token {} login failed", strToken);
+            HttpBasicLogger.warn("Retrieving of token {} login Authorized failed", strToken);
         }
         return false;
     }
@@ -206,9 +207,9 @@ public class Authenticator {
      * @param request
      * @return String token Return To user
      */
-    private String genToken(RestRequest request) {
+    private String getToken(RestRequest request) {
         String strToken = this.getTokenFromCookie(request);
-        if (isEmpty(strToken)) {
+        if (isEmpty(strToken) && isEmpty(auth.getTokenUri())) {
             strToken = TokenUtil.genToken(auth.getUser());
         }
         ssoMaps.put(strToken, System.currentTimeMillis());
@@ -254,7 +255,7 @@ public class Authenticator {
         // http.cors.allow-headers: "X-Requested-With, Content-Type, Content-Length, Authorization"
         if (request.method() == RestRequest.Method.OPTIONS) {
             if (auth.isLog()) {
-                HttpBasicLogger.info("CORS success Authorized type {}, address {}, path {}, request {}, content {}",
+                HttpBasicLogger.info("CORS Authorized success type {}, address {}, path {}, request {}, content {}",
                         request.method(), getAddress(request), request.path(), request.params(), request.content().toUtf8());
             }
             return true;
@@ -292,13 +293,12 @@ public class Authenticator {
      */
     private void logRequest(final RestRequest request) {
         String addr = getAddress(request).getHostAddress();
-        String t = "Authorization:{}, type: {}, Host:{}, Path:{}, {}:{}, Request-IP:{}, " +
-                "Client-IP:{}, X-Client-IP{}";
+        String t = "Host:{}, type: {}, Path:{}, Cookie:{}, :{}:{}, Request-IP:{}, Client-IP:{}, X-Client-IP{}";
         HttpBasicLogger.info(t,
-                request.header("Authorization"),
-                request.method(),
                 request.header("Host"),
+                request.method(),
                 request.path(),
+                this.getTokenFromCookie(request),
                 auth.getxForwardHeader(),
                 request.header(auth.getxForwardHeader()),
                 addr,
@@ -312,9 +312,8 @@ public class Authenticator {
      */
     private void logUnAuthorizedRequest(final RestRequest request) {
         String addr = getAddress(request).getHostAddress();
-        String t = "UNAUTHORIZED type:{}, address:{}, path:{}, request:{},"
-                + "content:{}, credentials:{}";
-        HttpBasicLogger.error(t, request.method(), addr, request.path(), request.params(),
+        String t = "UNAUTHORIZED type:{}, address:{}, path:{}, request:{}, Cookie:{}, content:{}, credentials:{}";
+        HttpBasicLogger.error(t, request.method(), addr, request.path(), request.params(), this.getTokenFromCookie(request),
                 request.content().toUtf8(), getDecoded(request));
     }
 
@@ -354,15 +353,15 @@ public class Authenticator {
                 String givenPass = userAndPassword[1];
                 if (auth.getUser().equals(givenUser) && auth.getPassword().equals(givenPass)) {
                     if (auth.isLog()) {
-                        HttpBasicLogger.info("authBasic success Authorized of user {} and password {}", givenUser, givenPass);
+                        HttpBasicLogger.info("AuthBasic Authorized success of user {} and password {}", givenUser, givenPass);
                     }
                     return true;
                 } else {
-                    HttpBasicLogger.error("authBasic failed Authorized of user {} and password {}", givenUser, givenPass);
+                    HttpBasicLogger.error("AuthBasic Authorized failed of user {} and password {}", givenUser, givenPass);
                 }
             }
         } catch (Exception e) {
-            HttpBasicLogger.warn("Retrieving of user and password failed for " + decoded + " ," + e.getMessage());
+            HttpBasicLogger.warn("Retrieving of user and password Authorized failed for " + decoded + " ," + e.getMessage());
         }
         return false;
     }
